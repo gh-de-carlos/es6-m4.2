@@ -13,9 +13,9 @@ let isComplete = false;
 // que tenga el valor por defecto `false` para el estado de
 // la tarea. Si no se pasa el valor quedará 'pendiente'
 const agregarTarea = (task = '', isComplete = false) => {
-  // en este punto, el ejercicio aún no hace uso del
-  // parámetro isComplete, ni indica si crear un objeto tarea
-  tasks.push(task);
+  // aunque el ejercicio no lo indica, he pusheado un nuevo
+  // objecto combinando la tarea con el estado.
+  tasks.push({task, isComplete});
 }
 
 // PUNTO 4.
@@ -23,6 +23,7 @@ const agregarTarea = (task = '', isComplete = false) => {
 // cada tarea (aún no hay una lista) con su estado por la 
 // consola, usando interpolación de strings.
 // OBS. 1: necesitamos un arreglo con tareas para recorrer:
+// esta objeto cumple parcialmente el PUNTO 5 también.
 const tasks = [
   { nombre: "Comprar pan", isComplete: false, id: 1 },
   { nombre: "Regar las plantas", isComplete: true, id: 2 },
@@ -44,7 +45,9 @@ const tasks = [
 // Implementar un objeto `tarea` para cada tarea con nombre,
 // estado e id. Usar destructuring para extraer estos campos
 // y mostrarlos de manera organizada. 
-// OBS: se comenta y refactoriza la función anterior:
+// OBS: se comenta y refactoriza la función anterior, utilizando
+// el objeto que ya se creó en el PUNTO 4. Se realiza destructuring
+// dentro de los parámetros de la firma de la función
 const mostrarTareas = ({ nombre, isComplete, id }) => {
   console.log(`La tarea con id ${id} es: ${nombre}. Terminada: ${isComplete}.`);
 }
@@ -57,11 +60,11 @@ tasks.forEach(task => console.log(mostrarTareas(task)));
 // valor, SOLO LA REFERENCIA al array se pasará por valor, 
 // pero cada objeto interior se pasará por referencia. ¡OJO!
 const newTask = { nombre: "Dormir mucho", isComplete: false, id: 15 };
-// se usa sprea par copiar el arreglo y crear uno nuevo 
+// se usa spread para copiar el arreglo y crear uno nuevo 
 // incorporando la nueva tarea "sin modificar" el original.
 const newTasks = [...tasks, newTask];
 
-// 6.2 eliminar con spread para múltiples parámetros
+// 6.2 eliminar con rest para múltiples parámetros
 // Esta versión no valida los parámetros porque no se pide.
 const eliminarTarea = (...indexes) => {
   const refreshed = tasks.filter(task => !indexes.includes(task.id));
@@ -77,15 +80,20 @@ console.log('----- ejercicio 6.2: Usando spread y rest para eliminar tareas')
 // completadas "de manera que no puedan repetirse" porque 
 // Map almacena una referencia al objeto, no los valores. 
 // Por lo tanto lo que se entenderá es: 
-// 1. Almacena los id de las tareas completadas para que no
-// puedan repetirse:
+// A. Almacena los id de las tareas completadas en un objeto
+// Set para que no puedan repetirse:
 const completedSet = new Set();
 tasks.forEach(task => {
   if (task.isComplete) completedSet.add(task.id);
 })
 console.dir( completedSet);
 console.log('----- ejercicio 9.1: El nuevo set id\'s de tareas completas: ')
-// 2. Crea un Map para almacenar las tareas 
+// B. Crea un Map para almacenar las tareas. 
+// Acá no explica si quiere un Map de todas las tareas o solo
+// de las tareas completadas. Como el fin del ejercicio es 
+// practicar elementos de ES6+ simplemente se ha creado un Map
+// de todas las tareas haciendo destructuring del objeto tarea
+// para crear una relación id: {nombre, isComplete}
 const tasksMap = new Map();
 tasks.forEach(({ id, nombre, isComplete }) => {
   tasksMap.set(id, { nombre, isComplete });
@@ -94,14 +102,14 @@ console.dir(tasksMap);
 console.log('----- ejercicio 9.2: El nuevo mapa de tareas: ');
 
 // PUNTO 10
-function* taskNarrator(tasks) {
+function* taskGenerator(tasks) {
   for (const { id, nombre, isComplete } of tasks) {
     yield `📝 Tarea #${id}: "${nombre}" — ${isComplete ? "✅ Completada" : "🔄 Pendiente"}`;
   }
 }
-const narrator = taskNarrator(tasks);
+const iterator = taskGenerator(tasks);
 console.log('----ejercicio 10: usando un generador/iterador------');
-for (const line of narrator) {
+for (const line of iterator) {
   console.log(line);
 }
 
@@ -109,12 +117,14 @@ for (const line of narrator) {
 // Simula la carga de las tareas desde un servidor y las
 // muestra como una tabla. 
 function cargarTareasAsync() {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     console.log('------ ejercicio 11: Cargando tareas desde el servidor...');
     setTimeout(() => {
       console.table(tasks);
+      resolve()
     }, 1500)
   })
 }
 
-cargarTareasAsync();
+cargarTareasAsync()
+  .then(() => console.log("Punto 11 completo! ✔️"))
